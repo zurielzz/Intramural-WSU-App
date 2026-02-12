@@ -32,14 +32,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
     canUndo,
 }) => {
     return (
-        <div className="bg-white/90 backdrop-blur p-6 md:p-8 rounded-[2rem] shadow-xl w-full mx-auto border-[6px] border-[#981e32] relative overflow-hidden h-full flex flex-col justify-center min-h-[450px]">
-            {/* Decorative background element */}{/* Removed diagonal lines per previous request if they existed, but leaving the gradient line if user likes it, or wait, user said 'like you do in scoreboard'. Scoreboard has texture, ControlPanel has gradient line. I'll just change the border for now. */}
-
+        <div className="bg-white/90 backdrop-blur p-4 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-xl w-full mx-auto border-4 md:border-[6px] border-[#981e32] relative overflow-hidden h-full flex flex-col justify-center">
 
             {/* Header / Global Controls */}
-            <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+            <div className="flex justify-between items-center mb-4 md:mb-6 border-b border-gray-100 pb-3 md:pb-4">
                 <div>
-                    <h3 className="text-gray-400 font-mono text-xs uppercase tracking-[0.2em] font-bold mb-1">Control Panel</h3>
+                    <h3 className="text-gray-400 font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold mb-1">Control Panel</h3>
                     <div className="flex space-x-2">
                         <button
                             onClick={onResetGame}
@@ -52,14 +50,68 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 <button
                     onClick={onUndo}
                     disabled={!canUndo}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${canUndo ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-50 text-gray-300 cursor-not-allowed'}`}
+                    className={`flex items-center space-x-1 md:space-x-2 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-colors ${canUndo ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-50 text-gray-300 cursor-not-allowed'}`}
                 >
-                    <Undo2 size={16} />
+                    <Undo2 size={14} />
                     <span>Undo</span>
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative h-full items-center">
+            {/* Mobile: Timer controls first, then Home/Away side by side */}
+            <div className="flex flex-col md:hidden gap-4">
+                {/* Timer Controls */}
+                <div className="flex flex-col gap-2">
+                    <button
+                        onClick={onToggleTimer}
+                        className={`w-full p-4 rounded-xl font-bold text-white transition-all transform active:scale-95 shadow-lg border-b-4 flex items-center justify-center ${gameState.isRunning ? 'bg-[#981e32] hover:bg-[#b0223a] border-[#7a1828]' : 'bg-[#5e6a71] hover:bg-[#4d575c] border-[#3f474b]'}`}
+                    >
+                        {gameState.isRunning ? <Pause className="mr-2 fill-current w-6 h-6" /> : <Play className="mr-2 fill-current w-6 h-6" />}
+                        <span className="text-xl">{gameState.isRunning ? 'STOP' : 'START'}</span>
+                    </button>
+                    <div className="grid grid-cols-3 gap-2">
+                        <button onClick={onResetTimer} className="p-2 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 text-xs font-bold flex items-center justify-center gap-1">
+                            <RotateCcw size={14} /> Reset
+                        </button>
+                        <button onClick={onTogglePossession} className="p-2 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-bold flex items-center justify-center gap-1">
+                            <ArrowLeftRight size={14} /> Poss
+                        </button>
+                        <button onClick={onNextPeriod} className="p-2 rounded-lg bg-violet-50 text-violet-700 border border-violet-100 text-xs font-bold flex items-center justify-center gap-1">
+                            <Clock size={14} /> Half
+                        </button>
+                    </div>
+                </div>
+
+                {/* Home & Away Side by Side */}
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Home */}
+                    <div className="flex flex-col gap-2">
+                        <div className="text-center text-[#981e32] uppercase font-black tracking-tighter text-lg">HOME</div>
+                        <div className="grid grid-cols-3 gap-1">
+                            <button onClick={() => onAddScore('HOME', 1)} className="bg-[#981e32] text-white shadow-md border-b-3 border-[#7a1828] active:border-b-0 active:translate-y-0.5 transition-all rounded-lg py-3 text-lg font-black">+1</button>
+                            <button onClick={() => onAddScore('HOME', 2)} className="bg-[#981e32] text-white shadow-md border-b-3 border-[#7a1828] active:border-b-0 active:translate-y-0.5 transition-all rounded-lg py-3 text-lg font-black">+2</button>
+                            <button onClick={() => onAddScore('HOME', 3)} className="bg-[#981e32] text-white shadow-md border-b-3 border-[#7a1828] active:border-b-0 active:translate-y-0.5 transition-all rounded-lg py-3 text-lg font-black">+3</button>
+                        </div>
+                        <button onClick={() => onResetScore('HOME')} className="w-full py-2 rounded-full bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-wider border border-gray-200">Clear Score</button>
+                        <button onClick={() => onAddTeamFoul('HOME')} className="p-3 rounded-lg bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50 font-bold text-sm w-full">+ Foul</button>
+                        <button onClick={() => onResetTeamFouls('HOME')} className="w-full py-2 rounded-full bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-wider border border-gray-200">Clear Fouls</button>
+                    </div>
+                    {/* Away */}
+                    <div className="flex flex-col gap-2">
+                        <div className="text-center text-[#5e6a71] uppercase font-black tracking-tighter text-lg">AWAY</div>
+                        <div className="grid grid-cols-3 gap-1">
+                            <button onClick={() => onAddScore('GUEST', 1)} className="bg-[#5e6a71] text-white shadow-md border-b-3 border-[#3f474b] active:border-b-0 active:translate-y-0.5 transition-all rounded-lg py-3 text-lg font-black">+1</button>
+                            <button onClick={() => onAddScore('GUEST', 2)} className="bg-[#5e6a71] text-white shadow-md border-b-3 border-[#3f474b] active:border-b-0 active:translate-y-0.5 transition-all rounded-lg py-3 text-lg font-black">+2</button>
+                            <button onClick={() => onAddScore('GUEST', 3)} className="bg-[#5e6a71] text-white shadow-md border-b-3 border-[#3f474b] active:border-b-0 active:translate-y-0.5 transition-all rounded-lg py-3 text-lg font-black">+3</button>
+                        </div>
+                        <button onClick={() => onResetScore('GUEST')} className="w-full py-2 rounded-full bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-wider border border-gray-200">Clear Score</button>
+                        <button onClick={() => onAddTeamFoul('GUEST')} className="p-3 rounded-lg bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50 font-bold text-sm w-full">+ Foul</button>
+                        <button onClick={() => onResetTeamFouls('GUEST')} className="w-full py-2 rounded-full bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-600 text-[10px] font-bold uppercase tracking-wider border border-gray-200">Clear Fouls</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Desktop: Original 3-column layout */}
+            <div className="hidden md:grid grid-cols-3 gap-8 relative h-full items-center">
 
                 {/* Home Controls */}
                 <div className="flex flex-col space-y-4 h-full justify-center">
@@ -68,9 +120,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     </div>
                     <div className="grid grid-cols-1 gap-3">
                         <div className="grid grid-cols-3 gap-2">
-                            <button onClick={() => onAddScore('HOME', 1)} className="btn-score bg-[#981e32] text-white hover:bg-[#b0223a] shadow-md border-b-4 border-[#7a1828] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+1</button>
-                            <button onClick={() => onAddScore('HOME', 2)} className="btn-score bg-[#981e32] text-white hover:bg-[#b0223a] shadow-md border-b-4 border-[#7a1828] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+2</button>
-                            <button onClick={() => onAddScore('HOME', 3)} className="btn-score bg-[#981e32] text-white hover:bg-[#b0223a] shadow-md border-b-4 border-[#7a1828] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+3</button>
+                            <button onClick={() => onAddScore('HOME', 1)} className="bg-[#981e32] text-white hover:bg-[#b0223a] shadow-md border-b-4 border-[#7a1828] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+1</button>
+                            <button onClick={() => onAddScore('HOME', 2)} className="bg-[#981e32] text-white hover:bg-[#b0223a] shadow-md border-b-4 border-[#7a1828] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+2</button>
+                            <button onClick={() => onAddScore('HOME', 3)} className="bg-[#981e32] text-white hover:bg-[#b0223a] shadow-md border-b-4 border-[#7a1828] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+3</button>
                         </div>
                         <button onClick={() => onResetScore('HOME')} className="mt-2 w-full py-3 rounded-full bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-gray-200 hover:border-red-200">Clear Score</button>
                     </div>
@@ -86,11 +138,11 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                 </div>
 
                 {/* Center Controls (Timer & Game) */}
-                <div className="flex flex-col space-y-6 px-4 md:border-l md:border-r border-gray-100 justify-center h-full">
+                <div className="flex flex-col space-y-6 px-4 border-l border-r border-gray-100 justify-center h-full">
                     <div className="flex flex-col space-y-3 w-full">
                         <button
                             onClick={onToggleTimer}
-                            className={`w-full p-6 rounded-2xl font-bold text-white transition-all transform active:scale-95 shadow-lg border-b-4 flex items-center justify-center ${gameState.isRunning ? 'bg-amber-500 hover:bg-amber-600 border-amber-700' : 'bg-[#5e6a71] hover:bg-[#4d575c] border-[#3f474b]'}`}
+                            className={`w-full p-6 rounded-2xl font-bold text-white transition-all transform active:scale-95 shadow-lg border-b-4 flex items-center justify-center ${gameState.isRunning ? 'bg-[#981e32] hover:bg-[#b0223a] border-[#7a1828]' : 'bg-[#5e6a71] hover:bg-[#4d575c] border-[#3f474b]'}`}
                         >
                             {gameState.isRunning ? <Pause className="mr-3 fill-current w-8 h-8" /> : <Play className="mr-3 fill-current w-8 h-8" />}
                             <span className="text-2xl">{gameState.isRunning ? 'STOP' : 'START'}</span>
@@ -126,9 +178,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
                     </div>
                     <div className="grid grid-cols-1 gap-3">
                         <div className="grid grid-cols-3 gap-2">
-                            <button onClick={() => onAddScore('GUEST', 1)} className="btn-score bg-[#5e6a71] text-white hover:bg-[#4d575c] shadow-md border-b-4 border-[#3f474b] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+1</button>
-                            <button onClick={() => onAddScore('GUEST', 2)} className="btn-score bg-[#5e6a71] text-white hover:bg-[#4d575c] shadow-md border-b-4 border-[#3f474b] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+2</button>
-                            <button onClick={() => onAddScore('GUEST', 3)} className="btn-score bg-[#5e6a71] text-white hover:bg-[#4d575c] shadow-md border-b-4 border-[#3f474b] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+3</button>
+                            <button onClick={() => onAddScore('GUEST', 1)} className="bg-[#5e6a71] text-white hover:bg-[#4d575c] shadow-md border-b-4 border-[#3f474b] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+1</button>
+                            <button onClick={() => onAddScore('GUEST', 2)} className="bg-[#5e6a71] text-white hover:bg-[#4d575c] shadow-md border-b-4 border-[#3f474b] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+2</button>
+                            <button onClick={() => onAddScore('GUEST', 3)} className="bg-[#5e6a71] text-white hover:bg-[#4d575c] shadow-md border-b-4 border-[#3f474b] active:border-b-0 active:translate-y-1 transition-all rounded-xl py-4 text-xl font-black">+3</button>
                         </div>
                         <button onClick={() => onResetScore('GUEST')} className="mt-2 w-full py-3 rounded-full bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 text-xs font-bold uppercase tracking-wider transition-all shadow-sm border border-gray-200 hover:border-red-200">Clear Score</button>
                     </div>
