@@ -19,6 +19,8 @@ export interface GameState {
     isRunning: boolean;
     homePlayers: Player[];
     guestPlayers: Player[];
+    homeTeamName: string;
+    guestTeamName: string;
 }
 
 const INITIAL_TIME = 18 * 60; // 18 minutes
@@ -35,6 +37,8 @@ export function useGameState() {
         isRunning: false,
         homePlayers: [],
         guestPlayers: [],
+        homeTeamName: 'Home',
+        guestTeamName: 'Away',
     });
 
     const [history, setHistory] = useState<GameState[]>([]);
@@ -59,15 +63,20 @@ export function useGameState() {
 
     // Timer Logic
     useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (gameState.isRunning && gameState.timeLeft > 0) {
+        let interval: NodeJS.Timeout | undefined;
+        if (gameState.isRunning) {
             interval = setInterval(() => {
-                setGameState((prev) => ({ ...prev, timeLeft: prev.timeLeft - 1 }));
+                setGameState(prev => {
+                    if (prev.timeLeft <= 1) {
+                        return { ...prev, timeLeft: 0, isRunning: false };
+                    }
+                    return { ...prev, timeLeft: prev.timeLeft - 1 };
+                });
             }, 1000);
-        } else if (gameState.timeLeft === 0) {
-            setGameState((prev) => ({ ...prev, isRunning: false }));
         }
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [gameState.isRunning, gameState.timeLeft]);
 
     const toggleTimer = useCallback(() => {
@@ -226,10 +235,23 @@ export function useGameState() {
                 isRunning: false,
                 homePlayers: prev.homePlayers.map(p => ({ ...p, fouls: 0 })), // Reset player fouls too? usually yes for new game
                 guestPlayers: prev.guestPlayers.map(p => ({ ...p, fouls: 0 })),
+                homeTeamName: 'Home',
+                guestTeamName: 'Away',
             };
         });
     }, [pushToHistory]);
 
+    const setTeamName = useCallback((team: Team, name: string) => {
+        setGameState(prev => {
+            pushToHistory(prev);
+            const trimmed = name.trim();
+            if (!trimmed) return prev;
+            return {
+                ...prev,
+                [team === 'HOME' ? 'homeTeamName' : 'guestTeamName']: trimmed
+            };
+        });
+    }, [pushToHistory]);
 
     return {
         gameState,
@@ -246,6 +268,7 @@ export function useGameState() {
         resetScore,
         resetGame,
         undo,
+        setTeamName,
         canUndo: history.length > 0
     };
 }
